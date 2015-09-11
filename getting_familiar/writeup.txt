@@ -1,0 +1,20 @@
+ROSBAG
+
+1. rosbag allows you to re-play the sequence of messages that have been passed to the robot, so this would be particularly useful to see if all the right topics are being published/subscribed to properly. It wouls also be useful to use rosbag if the robot or the program crashes for whatever reason, in order to check if certain messages are causing the robot to freak out.
+
+2. rosbag won't perfectly record the robot's movements when a recording is played back. When we tested the teleop commands and recorded them using rosbag, the robot wouldn't move exactly the same way as it did the first time.
+
+---------------------------------------------------------------------------------------
+
+TF - Part 2
+
+If the fixed frame is set to odom, then the base link will follow the position and orientation that the robot is currently in. Otherwise, the base link will be detached from the Neato.
+
+---------------------------------------------------------------------------------------
+
+ROS Callbacks and Threading
+
+After we modified the code, the listener would print a new point of data every 10 seconds, but not the most recently published value. We can assume that the data going into a sensor's callback function will always be next unseen message in the queue, rather than the most recently published message. This may be suboptimal if a certain node runs slower than expected, causing sensor lag to build up over time.
+
+After we added a queue size, the listener now looks at the most recently published message in its callback function. This is useful in situations where a node needs to look at the most recent sensor data to make decisions on the spot. For example, this would be great for obstacle avoidance using the LIDAR. On the other hand, setting the queue size explicitly could cause problems because it could throw out important data that the listener may need to iterate through.
+
