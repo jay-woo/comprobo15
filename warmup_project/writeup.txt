@@ -1,0 +1,43 @@
+Warmup Project - Writeup
+
+1. Which behaviors did you implement?
+	a. Wall following - I had the robot dynamically pick which wall to follow, depending on which one is the closest. I also implemented a basic method of turning around corners, but that part does not seem to be working correctly. Other than that, the robot has been able to follow the direction of a wall pretty closely.
+
+	b. Person following - For this one, I programmed the Neato to follow a target in front of it, by changing its yaw and moving forwards when the target moves to a different position.
+
+	c. Obstacle avoidance - For obstacle avoidance, I had the Neato follow the gradient of a vector field, with each of the LIDAR points acting as a repulsive "point charge." The Neato turns around when an object obstructs its path.
+
+
+
+2. For each behavior, what strategy did you use to implement the behavior? 
+	a. Wall following - Depending on whether the left wall or the right wall was closer, I looked at the scan values at plus and minus 45 degrees from 90 degrees (if the left wall is closer) or 270 degrees (if the right wall is closer). If there is some amount of error between the plus and minus 45 degree values, then the robot is not parallel to the wall and will re-adjust itself.
+
+	b. Person following - I tried a few methods for this one, but essentially what I did in the end was I observed the LIDAR points and grouped them into "connected components" if they were close to adjacent. In other words, if there are data points at the points [345, 348, 13, 14, 15, 17], I grouped them like so: [[345, 348], [13, 14, 15, 17]]. I calculated the center of mass of each of these component and had the Neato follow the component that was closest to it. This method was intended to separate the target from extraneous obstacles in the environment, but it didn't quite work the way I wanted it to if particularly large obstacles are detected.
+
+	c. Obstacle avoidance - I constructed a vector from each LIDAR point to the Neato, and I summed up all of the x and y components of the repulsive force given by each data point. Each vector at each angle was inversely proportional to the distance squared, and in the end, the robot was able to move away from obstacles that came very close to it.
+
+
+
+3. For the finite state controller, what were the states?  What did the robot do in each state?  How did you combine and how did you detect when to transition between behaviors?
+	My finite state controller used my person following code when it detects an object in front of it and my obstacle avoidance code when it does not detect anything in front of it.
+
+
+
+4. How did you structure your code?
+	I put each of my behaviors into a class that had all necessary functions and variables saved within them.
+
+
+
+5. What if any challenges did you face along the way?
+	I tried doing a lot of the going beyond stuff in this lab, but that ended up breaking a lot of my working code that I had before. I completely forgot about Git, so I never remembered to push code when I got everything working.
+	I also had a hard time understanding coordinate frames and implementing TF into my code. Especially for the obstacle avoidance behavior, I found it hard to wrap my head around the syntax for TF and never ended up using it for the going beyond section.
+
+
+
+6. What would you do to improve your project if you had more time?
+	Definitely pushing to Git more often... Also, I wish I could have used more of the debugging tools sooner, like rviz and rosbag, instead of resorting to typical debugging habits that generally didn't work as well.
+
+
+
+7. Did you learn any interesting lessons for future robotic programming projects?
+	Although I felt that it was sometimes easier to just imagine how the finite state diagram looks like in my head, I always found it beneficial to draw out the diagram to see how all of the states feed into each other. It was incredibly helpful for debugging purposes.
