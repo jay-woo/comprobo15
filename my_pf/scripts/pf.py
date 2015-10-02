@@ -209,12 +209,12 @@ class ParticleFilter:
         """ Updates the particle weights in response to the scan contained in the msg """
         # TODO: implement this
         scan_range = [0:360]
-        scan = [i for i in scan_range if i != 0.0 and i < self.d_thresh]
-        robot_obstacle = msg.ranges[min(scan)]
         occupancy = OccupancyField()
-        for i in self.particle_cloud:
-        	closest_obs = occupancy.get_closest_obstacle_distance(i.x, i.y)
-        	i.w
+        for j in scan_range:
+        	for i in self.particle_cloud:
+        		# Transform laser scan obstacle point to reference frame of particle
+        		closest_obs = occupancy.get_closest_obstacle_distance(x_transform, y_transform)
+        		# Find closest obstacle, subtract from previous val to get d
 
     @staticmethod
     def weighted_values(values, probabilities, size):
