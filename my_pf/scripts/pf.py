@@ -95,6 +95,7 @@ class ParticleFilter:
         self.laser_max_distance = 2.0   # maximum penalty to assess in the likelihood field model
 
         # TODO: define additional constants if needed
+        self.LASER_ERROR = 0.2
 
         # Setup pubs and subs
 
@@ -117,9 +118,14 @@ class ParticleFilter:
         # request the map from the map server, the map should be of type nav_msgs/OccupancyGrid
         # TODO: fill in the appropriate service call here.  The resultant map should be assigned be passed
         #       into the init method for OccupancyField
+        try:
+        	self.map_serv = rospy.ServiceProxy('static_map', GetMap)
+        except rospy.ServiceException, e:
+        	print "Failed to get map from service: " + e
+        map = self.map_serv().map
 
         # for now we have commented out the occupancy field initialization until you can successfully fetch the map
-        #self.occupancy_field = OccupancyField(map)
+        self.occupancy_field = OccupancyField(map)
         self.initialized = True
 
     def update_robot_pose(self):
@@ -133,7 +139,17 @@ class ParticleFilter:
 
         # TODO: assign the lastest pose into self.robot_pose as a geometry_msgs.Pose object
         # just to get started we will fix the robot's pose to always be at the origin
-        self.robot_pose = Pose()
+        x_sum, y_sum, theta_sum = 0, 0, 0
+        for i in self.particle_cloud:
+        	x_sum += i.x * i.w
+        	y_sum += i.y * i.w
+        	theta_sum += i.theta * i.w
+        x_mean = x_sum / self.n_particles
+        y_mean = y_sum / self.n_particles
+        theta_mean = theta_sum / self.n_particles
+
+        particle_mean = Particle(x=x_mean, y=y_mean, theta=theta_mean)
+        self.robot_pose = particle_mean.as_pose()
 
     def update_particles_with_odom(self, msg):
         """ Update the particles using the newly given odometry pose.
@@ -172,7 +188,12 @@ class ParticleFilter:
         """
         # make sure the distribution is normalized
         self.normalize_particles()
+
         # TODO: fill out the rest of the implementation
+        probabilities = []
+        for i in self.particle_cloud:
+        	probabilities.append(i.w)
+        new_particles = ParticleFilter.draw_random_sample(self.particle_cloud, probabilities, self.n_particles)
 
     def update_particles_with_laser(self, msg):
         """ Updates the particle weights in response to the scan contained in the msg """
@@ -219,16 +240,28 @@ class ParticleFilter:
                       particle cloud around.  If this input is ommitted, the odometry will be used """
         if xy_theta == None:
             xy_theta = convert_pose_to_xy_and_theta(self.odom_pose.pose)
-        self.particle_cloud = []
+
         # TODO create particles
+        self.particle_cloud = []
+        for i in range(self.n_particles):
+        	x_gauss = gauss(xy_theta[0], self.LASER_ERROR)
+        	y_gauss = gauss(xy_theta[1], self.LASER_ERROR)
+        	theta_gauss = gauss(xy_theta[2], self.LASER_ERROR)
+
+        	self.particle_cloud.append(Particle(x_gauss, y_gauss, theta_gauss))
 
         self.normalize_particles()
         self.update_robot_pose()
 
     def normalize_particles(self):
         """ Make sure the particle weights define a valid distribution (i.e. sum to 1.0) """
-        pass
+
         # TODO: implement this
+        w_sum = 0
+        for i in self.particle_cloud:
+        	w_sum += i.w
+        for i in self.particle_cloud:
+        	i.w /= w_sum
 
     def publish_particles(self, msg):
         particles_conv = []
