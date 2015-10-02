@@ -96,6 +96,7 @@ class ParticleFilter:
 
         # TODO: define additional constants if needed
         self.LASER_ERROR = 0.2
+        self.ODOM_ERROR = 0.1
 
         # Setup pubs and subs
 
@@ -174,6 +175,15 @@ class ParticleFilter:
 
         # TODO: modify particles using delta
         # For added difficulty: Implement sample_motion_odometry (Prob Rob p 136)
+        for i in self.particle_cloud:
+        	i.x     += gauss(delta[0], self.ODOM_ERROR)
+        	i.y     += gauss(delta[1], self.ODOM_ERROR)
+        	i.theta += gauss(delta[2], self.ODOM_ERROR)
+
+        	if i.theta > 2 * math.pi:
+        		i.theta %= 2 * math.pi
+        	elif i.theta < 0:
+        		i.theta += 2 * math.pi
 
     def map_calc_range(self,x,y,theta):
         """ Difficulty Level 3: implement a ray tracing likelihood model... Let me know if you are interested """
@@ -198,7 +208,13 @@ class ParticleFilter:
     def update_particles_with_laser(self, msg):
         """ Updates the particle weights in response to the scan contained in the msg """
         # TODO: implement this
-        pass
+        scan_range = [0:360]
+        scan = [i for i in scan_range if i != 0.0 and i < self.d_thresh]
+        robot_obstacle = msg.ranges[min(scan)]
+        occupancy = OccupancyField()
+        for i in self.particle_cloud:
+        	closest_obs = occupancy.get_closest_obstacle_distance(i.x, i.y)
+        	i.w
 
     @staticmethod
     def weighted_values(values, probabilities, size):
@@ -244,8 +260,8 @@ class ParticleFilter:
         # TODO create particles
         self.particle_cloud = []
         for i in range(self.n_particles):
-        	x_gauss = gauss(xy_theta[0], self.LASER_ERROR)
-        	y_gauss = gauss(xy_theta[1], self.LASER_ERROR)
+        	x_gauss     = gauss(xy_theta[0], self.LASER_ERROR)
+        	y_gauss     = gauss(xy_theta[1], self.LASER_ERROR)
         	theta_gauss = gauss(xy_theta[2], self.LASER_ERROR)
 
         	self.particle_cloud.append(Particle(x_gauss, y_gauss, theta_gauss))
