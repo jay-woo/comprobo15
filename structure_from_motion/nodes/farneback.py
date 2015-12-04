@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from numpy import *
 import cv2
+import pdb
 
 def draw_flow(im,flow,step=16):
     h,w = im.shape[:2]

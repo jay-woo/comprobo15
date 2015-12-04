@@ -11,6 +11,9 @@ import cv2
 import numpy as np
 from geometry_msgs.msg import Twist, Vector3
 
+from dynamic_reconfigure.server import Server
+from neato_soccer.cfg import ColorsConfig
+
 class BallTracker(object):
     """ The BallTracker is a Python object that encompasses a ROS node 
         that can process images from the camera and search for a ball within.
@@ -27,38 +30,14 @@ class BallTracker(object):
         self.pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
         cv2.namedWindow('video_window')
 
-        """ Manual RGB thresholding """
-        # cv2.namedWindow('threshold_image')
-        # self.red_lower_bound = 0
-        # self.red_upper_bound = 0
-        # self.green_lower_bound = 0
-        # self.green_upper_bound = 0
-        # self.blue_lower_bound = 0
-        # self.blue_upper_bound = 0
-        # cv2.createTrackbar('red: lower', 'threshold_image', 0, 255, self.set_red_lower_bound)
-        # cv2.createTrackbar('red: upper', 'threshold_image', 0, 255, self.set_red_upper_bound)
-        # cv2.createTrackbar('green: lower', 'threshold_image', 0, 255, self.set_green_lower_bound)
-        # cv2.createTrackbar('green: upper', 'threshold_image', 0, 255, self.set_green_upper_bound)
-        # cv2.createTrackbar('blue: lower', 'threshold_image', 0, 255, self.set_blue_lower_bound)
-        # cv2.createTrackbar('blue: upper', 'threshold_image', 0, 255, self.set_blue_upper_bound)
-
         """ Manual HSV thresholding """
-        # cv2.namedWindow('threshold_image')
-        self.hue_lower_bound = 27
-        self.hue_upper_bound = 71
-        self.sat_lower_bound = 218
-        self.sat_upper_bound = 255
-        self.val_lower_bound = 121
-        self.val_upper_bound = 238
-        # cv2.createTrackbar('hue: lower', 'threshold_image', 0, 179, self.set_hue_lower_bound)
-        # cv2.createTrackbar('hue: upper', 'threshold_image', 0, 179, self.set_hue_upper_bound)
-        # cv2.createTrackbar('sat: lower', 'threshold_image', 0, 255, self.set_sat_lower_bound)
-        # cv2.createTrackbar('sat: upper', 'threshold_image', 0, 255, self.set_sat_upper_bound)
-        # cv2.createTrackbar('val: lower', 'threshold_image', 0, 255, self.set_val_lower_bound)
-        # cv2.createTrackbar('val: upper', 'threshold_image', 0, 255, self.set_val_upper_bound)
-
-        self.center_x = 0.0
-        self.center_y = 0.0
+        cv2.namedWindow('threshold_image')
+        cv2.createTrackbar('hue: lower', 'threshold_image', 0, 179, self.set_hue_lower_bound)
+        cv2.createTrackbar('hue: upper', 'threshold_image', 0, 179, self.set_hue_upper_bound)
+        cv2.createTrackbar('sat: lower', 'threshold_image', 0, 255, self.set_sat_lower_bound)
+        cv2.createTrackbar('sat: upper', 'threshold_image', 0, 255, self.set_sat_upper_bound)
+        cv2.createTrackbar('val: lower', 'threshold_image', 0, 255, self.set_val_lower_bound)
+        cv2.createTrackbar('val: upper', 'threshold_image', 0, 255, self.set_val_upper_bound)
 
     """ Callback functions for manual RGB filtering """
     def set_red_lower_bound(self, val):

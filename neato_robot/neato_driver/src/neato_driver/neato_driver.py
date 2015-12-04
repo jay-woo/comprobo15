@@ -41,7 +41,7 @@ import socket
 import time
 import select
 
-BASE_WIDTH = 248    # millimeters
+BASE_WIDTH = 242    # millimeters
 MAX_SPEED = 300     # millimeters/second
 
 xv11_analog_sensors = [ "WallSensorInMM",

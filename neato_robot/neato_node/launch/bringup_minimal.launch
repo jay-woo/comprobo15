@@ -9,5 +9,8 @@
   <node name="neato" pkg="neato_node" type="neato.py" output="screen">
     <param name="port" value="$(arg host)" />
   </node>
+  <node name="marker_node" pkg="sketchibot" type="servo_client.py" output="screen">
+    <param name="host" value="$(arg host)" />
+  </node>
   <node name="scan_stabilizer" pkg="neato_node" type="fix_scan_fast"/>
 </launch>
